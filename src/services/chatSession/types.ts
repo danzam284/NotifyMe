@@ -1,4 +1,4 @@
-import type { LLMMessage, SendTextOptions } from '../llm/types';
+import type { LLMMessage, SendTextOptions } from "../llm/types";
 
 export type CreateChatSessionOptions = {
   systemPrompt?: string;
@@ -14,9 +14,15 @@ export type ChatResponse = {
   messages: LLMMessage[];
 };
 
-export type ChatSession = {
+export interface ChatSessionData {
   id: string;
   messages: LLMMessage[];
   createdAt: Date;
   updatedAt: Date;
-};
+}
+
+export interface ChatSessionStore {
+  save(session: ChatSessionData): Promise<void>;
+  get(id: string): Promise<ChatSessionData | null>;
+  delete(id: string): Promise<void>;
+}
