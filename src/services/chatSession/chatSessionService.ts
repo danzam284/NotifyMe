@@ -2,12 +2,13 @@ import { ChatSession, type IChatSessionContext } from "./chatSession";
 import type { LLMProvider, LLMMessage } from "../llm/types";
 import type { ChatSessionStore, CreateChatSessionOptions } from "./types";
 import { createLLMProvider } from "../llm/providers/factory";
-import { InMemoryChatSessionStore } from "./store/inMemoryStore";
+import { BunSqliteService } from "../database/sqliteService";
+import { SqliteChatSessionStore } from "./store/sqliteStore";
 
 export class ChatSessionService {
   constructor(
-    private readonly provider: LLMProvider = createLLMProvider("groq"),
-    private readonly store: ChatSessionStore = new InMemoryChatSessionStore()
+    private readonly provider: LLMProvider,
+    private readonly store: ChatSessionStore
   ) {}
 
   async createSession(options: CreateChatSessionOptions = {}): Promise<ChatSession> {
@@ -62,4 +63,8 @@ export class ChatSessionService {
   }
 }
 
-export const chatSessionService = new ChatSessionService();
+const dbService = new BunSqliteService("llm_chat_sessions.db");
+const sqliteStore = new SqliteChatSessionStore(dbService);
+const defaultProvider = createLLMProvider("groq");
+
+export const chatSessionService = new ChatSessionService(defaultProvider, sqliteStore);
