@@ -1,9 +1,9 @@
-import { describe, it, expect } from "bun:test";
+import { describe, it, expect, mock } from "bun:test";
 import { apiRouter } from "../../routes/api";
 
 describe("apiRouter", () => {
-  it("routes POST /api/createNotification", async () => {
-    const req = new Request("http://localhost/api/createNotification", {
+  it("routes POST /api/notifications/initial", async () => {
+    const req = new Request("http://localhost/api/notifications/initial", {
       method: "POST",
       body: JSON.stringify({}),
       headers: { "Content-Type": "application/json" },
@@ -27,7 +27,7 @@ describe("apiRouter", () => {
   });
 
   it("returns 405 for unsupported method", async () => {
-    const req = new Request("http://localhost/api/createNotification", {
+    const req = new Request("http://localhost/api/notifications/initial", {
       method: "GET",
     });
 
