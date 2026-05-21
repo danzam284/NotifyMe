@@ -1,12 +1,16 @@
-import { createNotificationRequest } from "../controllers/createNotification";
+import { handleFollowUpResponse, handleInitialPrompt } from "../controllers/notificationController";
+
 
 type RouteHandler = (req: Request) => Response | Promise<Response>;
 
 type RouteTable = Record<string, Partial<Record<string, RouteHandler>>>;
 
 const routes: RouteTable = {
-  "/api/createNotification": {
-    POST: createNotificationRequest,
+  "/api/notifications/initial": {
+    POST: handleInitialPrompt,
+  },
+  "/api/notifications/respond": {
+    POST: handleFollowUpResponse,
   },
 };
 

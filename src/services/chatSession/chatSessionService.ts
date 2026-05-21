@@ -65,6 +65,6 @@ export class ChatSessionService {
 
 const dbService = new BunSqliteService("llm_chat_sessions.db");
 const sqliteStore = new SqliteChatSessionStore(dbService);
-const defaultProvider = createLLMProvider("groq");
+const defaultProvider = createLLMProvider("mistral");
 
 export const chatSessionService = new ChatSessionService(defaultProvider, sqliteStore);
