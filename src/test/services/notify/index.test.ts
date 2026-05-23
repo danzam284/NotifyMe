@@ -2,6 +2,13 @@ import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from "bun:te
 import * as responseParser from "../../../services/notify/responseParser";
 import { chatSessionService } from "../../../services/chatSession/chatSessionService";
 import { orchestrateFollowUpRequest, orchestrateInitialRequest } from "../../../services/notify";
+import { schedulerService } from "../../../services/scheduler";
+import { HardcodedNotificationJob } from "../../../services/scheduler/jobs/hardcodedNotification";
+import { AgentPollingJob } from "../../../services/scheduler/jobs/agentNotification";
+
+const scheduleSpy = spyOn(schedulerService, "schedule").mockImplementation(
+  () => {}
+);
 
 describe("orchestrator", () => {
   const mockSession = {
@@ -15,6 +22,7 @@ describe("orchestrator", () => {
 
     mockSession.sendMessage.mockReset();
     mockSession.delete.mockReset();
+    spyOn(schedulerService, "schedule").mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -53,6 +61,7 @@ describe("orchestrator", () => {
       });
 
       expect(mockSession.delete).not.toHaveBeenCalled();
+      expect(schedulerService.schedule).not.toHaveBeenCalled();
     });
 
     it("deletes the session for HARDCODED responses", async () => {
@@ -67,6 +76,7 @@ describe("orchestrator", () => {
       spyOn(responseParser, "parseAndValidateResponse").mockReturnValue({
         status: "HARDCODED",
         execute_at: "2026-05-21T10:00:00Z",
+        context: "hi"
       });
 
       const result = await orchestrateInitialRequest(
@@ -76,6 +86,10 @@ describe("orchestrator", () => {
       expect(result.decision.status).toBe("HARDCODED");
 
       expect(mockSession.delete).toHaveBeenCalledTimes(1);
+      expect(schedulerService.schedule).toHaveBeenCalledTimes(1);
+
+      const scheduledJob = (schedulerService.schedule as any).mock.calls[0][0];
+      expect(scheduledJob).toBeInstanceOf(HardcodedNotificationJob);
     });
 
     it("deletes the session for CANNOT_DO responses", async () => {
@@ -99,6 +113,7 @@ describe("orchestrator", () => {
       expect(result.decision.status).toBe("CANNOT_DO");
 
       expect(mockSession.delete).toHaveBeenCalledTimes(1);
+      expect(schedulerService.schedule).not.toHaveBeenCalled();
     });
   });
 
@@ -149,6 +164,10 @@ describe("orchestrator", () => {
       });
 
       expect(mockSession.delete).toHaveBeenCalledTimes(1);
+      expect(schedulerService.schedule).toHaveBeenCalledTimes(1);
+
+      const scheduledJob = (schedulerService.schedule as any).mock.calls[0][0];
+      expect(scheduledJob).toBeInstanceOf(AgentPollingJob);
     });
   });
 });

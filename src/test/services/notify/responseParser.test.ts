@@ -37,13 +37,15 @@ describe("parseAndValidateResponse", () => {
       const result = parseAndValidateResponse(`
         {
           "status": "HARDCODED",
-          "execute_at": "2026-05-21T10:00:00Z"
+          "execute_at": "2040-05-21T10:00:00Z",
+          "context": "hi"
         }
       `);
 
       expect(result).toEqual({
         status: "HARDCODED",
-        execute_at: "2026-05-21T10:00:00Z",
+        execute_at: "2040-05-21T10:00:00Z",
+        context: "hi"
       });
     });
 
@@ -132,6 +134,18 @@ Line 2"
           }
         `)
       ).toThrow(OrchestratorParsingError);
+    });
+
+    it("throws for hardcoded date in the past", () => {
+      expect(() =>
+        parseAndValidateResponse(`
+          {
+            "status": "HARDCODED",
+            "execute_at": "2020-05-21T10:00:00Z",
+            "context": "hi"
+          }
+        `)
+      ).toThrow(OrchestratorParsingError)
     });
   });
 

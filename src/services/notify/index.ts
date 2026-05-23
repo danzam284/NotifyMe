@@ -1,6 +1,9 @@
 import type { ChatSession } from "../chatSession/chatSession";
 import { chatSessionService } from "../chatSession/chatSessionService";
 import { NOTIFY_CLASSIFIER_SYSTEM_PROMPT, USER_INITIAL_PROMPT, USER_RESPONSE_PROMPT } from "../llm/prompts";
+import { schedulerService } from "../scheduler";
+import { AgentPollingJob } from "../scheduler/jobs/agentNotification";
+import { HardcodedNotificationJob } from "../scheduler/jobs/hardcodedNotification";
 import { parseAndValidateResponse } from "./responseParser";
 import type { OrchestratorResponse, PipelineResult } from "./types";
 
@@ -40,11 +43,28 @@ async function processExecutionResult(session: ChatSession, rawResponse: string)
   };
 }
 
-async function persistActiveNotificationWorker(sessionId: string, decision: OrchestratorResponse): Promise<void> {
+async function persistActiveNotificationWorker(
+  sessionId: string,
+  decision: OrchestratorResponse
+): Promise<void> {
+
   if (decision.status === "HARDCODED") {
-    console.log(`[Scheduler] Persisting One-Time Trigger at: ${decision.execute_at}`);
-  } 
+    schedulerService.schedule(
+      new HardcodedNotificationJob(
+        sessionId,
+        new Date(decision.execute_at),
+        decision.context
+      )
+    );
+  }
+
   if (decision.status === "AGENT") {
-    console.log(`[Scheduler] Spin up Tavily Polling agent loop with interval rate: ${decision.interval}`);
+    schedulerService.schedule(
+      new AgentPollingJob(
+        sessionId,
+        decision.interval,
+        decision.agent_prompt
+      )
+    );
   }
 }

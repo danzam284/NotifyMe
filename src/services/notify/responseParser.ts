@@ -1,13 +1,11 @@
 import { OrchestratorParsingError, VALID_INTERVALS, VALID_STATUSES, type AgentInterval, type OrchestratorResponse, type OrchestratorStatus } from "./types";
 
 export function parseAndValidateResponse(rawLLMOutput: string): OrchestratorResponse {
-    console.log(rawLLMOutput);
   if (!rawLLMOutput || typeof rawLLMOutput !== 'string') {
     throw new OrchestratorParsingError('Received empty or non-string input from the LLM.');
   }
 
   let cleaned = cleanRawResponse(rawLLMOutput);
-  console.log(cleaned);
 
   let parsedResponse: any;
   try {
@@ -42,7 +40,7 @@ function cleanRawResponse(text: string): string {
 }
 
 function categorizeResponse(parsedResponse: any): OrchestratorResponse {
-    const { reason, question, execute_at, interval, agent_prompt } = parsedResponse;
+    const { reason, question, execute_at, interval, agent_prompt, context } = parsedResponse;
 
     switch (parsedResponse.status as OrchestratorStatus) {
         case 'CANNOT_DO':
@@ -61,9 +59,16 @@ function categorizeResponse(parsedResponse: any): OrchestratorResponse {
             if (!execute_at || isNaN(Date.parse(execute_at))) {
                 throw new OrchestratorParsingError(`Status is HARDCODED but "execute_at" is missing or not a valid ISO-8601 timestamp. Received: ${execute_at}`);
             }
+            if (new Date(execute_at).getTime() <= Date.now()) {
+                throw new OrchestratorParsingError(`Status is HARDCODED but "execute_at" must be in the future. Received: ${execute_at}`);
+            }
+            if (!context || typeof context !== 'string' || context.trim() === '') {
+                throw new OrchestratorParsingError('Status is HARDCODED but "context" string is missing or empty.');
+            }
             return { 
                 status: 'HARDCODED', 
                 execute_at: execute_at, 
+                context: context
             };
 
         case 'AGENT':

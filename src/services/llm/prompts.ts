@@ -28,6 +28,7 @@ You must respond ONLY with a valid JSON object. Do not include conversational fi
 {
   "status": "HARDCODED",
   "execute_at": "The exact ISO 8601 timestamp (YYYY-MM-DDTHH:mm:ssZ) for the occurrence of this event. If the calculated date has already occurred based on the CONTEXT (based on the year), you may assume that the following year is to be tracked (do not need a follow up question pertaining to specifically that).",
+  "context": "A concise summary of what the user is requesting to be notified for. This will be used to send a relevent response back"
 }
 
 4. IF COMPLETED & REQUIRES A WEB AGENT (Dynamic data, web scraping, API polling):
