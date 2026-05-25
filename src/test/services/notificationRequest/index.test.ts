@@ -76,7 +76,7 @@ describe("orchestrator", () => {
       spyOn(responseParser, "parseAndValidateResponse").mockReturnValue({
         status: "HARDCODED",
         execute_at: "2026-05-21T10:00:00Z",
-        context: "hi"
+        response: "hi"
       });
 
       const result = await orchestrateInitialRequest(

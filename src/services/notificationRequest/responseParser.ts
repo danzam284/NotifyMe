@@ -40,7 +40,7 @@ function cleanRawResponse(text: string): string {
 }
 
 function categorizeResponse(parsedResponse: any): OrchestratorResponse {
-    const { reason, question, execute_at, interval, agent_prompt, context } = parsedResponse;
+    const { reason, question, execute_at, interval, agent_prompt, response } = parsedResponse;
 
     switch (parsedResponse.status as OrchestratorStatus) {
         case 'CANNOT_DO':
@@ -62,13 +62,13 @@ function categorizeResponse(parsedResponse: any): OrchestratorResponse {
             if (new Date(execute_at).getTime() <= Date.now()) {
                 throw new OrchestratorParsingError(`Status is HARDCODED but "execute_at" must be in the future. Received: ${execute_at}`);
             }
-            if (!context || typeof context !== 'string' || context.trim() === '') {
-                throw new OrchestratorParsingError('Status is HARDCODED but "context" string is missing or empty.');
+            if (!response || typeof response !== 'string' || response.trim() === '') {
+                throw new OrchestratorParsingError('Status is HARDCODED but "response" string is missing or empty.');
             }
             return { 
                 status: 'HARDCODED', 
                 execute_at: execute_at, 
-                context: context
+                response: response
             };
 
         case 'AGENT':

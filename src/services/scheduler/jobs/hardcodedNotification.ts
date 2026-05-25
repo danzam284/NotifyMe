@@ -10,7 +10,7 @@ export class HardcodedNotificationJob implements ScheduledJob {
   constructor(
     id: string,
     private readonly executeAt: Date,
-    private readonly context: string,
+    private readonly response: string,
     private readonly notifyService: NotifyService
   ) {
     this.id = id;
@@ -48,10 +48,10 @@ export class HardcodedNotificationJob implements ScheduledJob {
 
   private async executeNotification(): Promise<void> {
     try {
-        console.log(this.context);
+        console.log(this.response);
       await this.notifyService.notify({
         type: "HARDCODED",
-        context: this.context,
+        context: this.response,
       });
     } catch (error) {
       console.error(

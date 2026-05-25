@@ -6,7 +6,7 @@ export type AgentInterval = (typeof VALID_INTERVALS)[number];
 
 export type CannotDoResponse = { status: 'CANNOT_DO'; reason: string };
 export type QuestionResponse = { status: 'QUESTION'; question: string };
-export type HardcodedResponse = { status: 'HARDCODED'; execute_at: string, context: string };
+export type HardcodedResponse = { status: 'HARDCODED'; execute_at: string, response: string };
 export type AgentResponse = { status: 'AGENT'; interval: AgentInterval; agent_prompt: string };
 
 export type OrchestratorResponse = CannotDoResponse | QuestionResponse | HardcodedResponse | AgentResponse;

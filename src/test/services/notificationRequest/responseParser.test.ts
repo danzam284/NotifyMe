@@ -38,14 +38,14 @@ describe("parseAndValidateResponse", () => {
         {
           "status": "HARDCODED",
           "execute_at": "2040-05-21T10:00:00Z",
-          "context": "hi"
+          "response": "hi"
         }
       `);
 
       expect(result).toEqual({
         status: "HARDCODED",
         execute_at: "2040-05-21T10:00:00Z",
-        context: "hi"
+        response: "hi"
       });
     });
 

@@ -28,14 +28,14 @@ You must respond ONLY with a valid JSON object. Do not include conversational fi
 {
   "status": "HARDCODED",
   "execute_at": "The exact ISO 8601 timestamp (YYYY-MM-DDTHH:mm:ssZ) for the occurrence of this event. If the calculated date has already occurred based on the CONTEXT (based on the year), you may assume that the following year is to be tracked (do not need a follow up question pertaining to specifically that).",
-  "context": "A concise summary of what the user is requesting to be notified for. This will be used to send a relevent response back"
+  "response": "A message sent back to the user when the notification completes. This should be a consise message indicating that the notification is done and providing some context about the notification so they do not forget what it was about."
 }
 
 4. IF COMPLETED & REQUIRES A WEB AGENT (Dynamic data, web scraping, API polling):
 {
   "status": "AGENT",
   "interval": "MUST be exactly one of these tokens: '1_HOUR', '6_HOURS', '12_HOURS', '1_DAY', '1_WEEK'. Choose based on urgency (e.g., '1_HOUR' for weather changes, '1_DAY' for retail sales, '1_WEEK' for when a new iPhone comes out).",
-  "agent_prompt": "A highly detailed, context-rich instruction prompt for a web-browsing agent. Include exactly what website or data source to check, what specific condition constitutes a 'trigger', and what information to pass back for the notification."
+  "agent_prompt": "A highly detailed, context-rich instruction prompt for a web-browsing agent. Include exactly what website or data sources to check (keep it open ended unless there is a direct relevant source), what specific condition constitutes a 'trigger', and what information to pass back for the notification. The prompt should also provide a consise format for which the agent should respond. Make sure the agent returns a JSON format like so: { shouldNotify: boolean (whether the notification trigger was determined to be true (for ex: if user wants to be notified when a sale is active and sale was determined to be active by agent, this should be true), response: string (A message sent back to the user when the notification completes. This should be a consise message indicating that the notification is done and providing some context about the notification and agent findings."
 }
 `.trim();
 

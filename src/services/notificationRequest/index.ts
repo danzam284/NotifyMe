@@ -54,7 +54,7 @@ async function persistActiveNotificationWorker(
       new HardcodedNotificationJob(
         sessionId,
         new Date(decision.execute_at),
-        decision.context,
+        decision.response,
         notifyService
       )
     );
