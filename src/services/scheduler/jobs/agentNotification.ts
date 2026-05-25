@@ -1,5 +1,6 @@
 import { intervalToMs } from "../../../utils/types";
-import type { AgentInterval } from "../../notify/types";
+import type { AgentInterval } from "../../notificationRequest/types";
+import type { NotifyService } from "../../notify";
 import type { ScheduledJob } from "../types";
 
 export class AgentPollingJob implements ScheduledJob {
@@ -11,7 +12,8 @@ export class AgentPollingJob implements ScheduledJob {
   constructor(
     id: string,
     private readonly pollingInterval: AgentInterval,
-    private readonly agentPrompt: string
+    private readonly agentPrompt: string,
+    private readonly notifyService: NotifyService
   ) {
     this.id = id;
   }
@@ -23,17 +25,8 @@ export class AgentPollingJob implements ScheduledJob {
       `[Agent] Starting polling job "${this.id}"`
     );
 
-    this.interval = setInterval(() => {
-      console.log(`[Agent] Polling "${this.id}"`);
-
-      const isDone = Math.random() < 0.2;
-
-      if (isDone) {
-        console.log(`[Agent] Completed "${this.id}"`);
-        console.log(`[Agent Prompt] ${this.agentPrompt}`);
-
-        this.cancel();
-      }
+    this.interval = setInterval(async () => {
+      void this.executeNotification();
     }, intervalMs);
   }
 
@@ -47,5 +40,29 @@ export class AgentPollingJob implements ScheduledJob {
 
   public isComplete(): boolean {
     return this.completed;
+  }
+
+  private async executeNotification(): Promise<void> {
+    try {
+      console.log(`[Agent] Polling "${this.id}"`);
+
+      // Placeholder until real agent exists
+      const agentResponse = "Criteria matched for notification.";
+
+      const isDone = Math.random() < 0.5;
+
+      if (isDone) {
+        console.log(`[Agent] Completed "${this.id}"`);
+        await this.notifyService.notify({
+          type: "AGENT",
+          agentPrompt: this.agentPrompt,
+          agentResponse,
+        });
+      }
+    } catch (error) {
+      console.error(`[Notification] Failed job "${this.id}"`, error);
+    } finally {
+      this.cancel();
+    }
   }
 }

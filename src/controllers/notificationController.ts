@@ -1,6 +1,6 @@
 
 
-import { orchestrateFollowUpRequest, orchestrateInitialRequest } from "../services/notify/index.ts";
+import { orchestrateFollowUpRequest, orchestrateInitialRequest } from "../services/notificationRequest/index.ts";
 import { badRequest, json } from "../utils/http.ts";
 
 export async function handleInitialPrompt(req: Request): Promise<Response> {

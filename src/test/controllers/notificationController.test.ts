@@ -1,7 +1,7 @@
 import { describe, expect, test, spyOn, mock } from "bun:test";
 import { handleFollowUpResponse, handleInitialPrompt } from "../../controllers/notificationController";
-import * as notifyServices from "../../services/notify/index.ts";
-import type { PipelineResult } from "../../services/notify/types.ts";
+import * as notifyServices from "../../services/notificationRequest/index.ts";
+import type { PipelineResult } from "../../services/notificationRequest/types.ts";
 
 // Mock the dependencies
 mock.module("../services/notify/index.ts", () => ({

@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from "bun:test";
-import * as responseParser from "../../../services/notify/responseParser";
+import * as responseParser from "../../../services/notificationRequest/responseParser";
 import { chatSessionService } from "../../../services/chatSession/chatSessionService";
-import { orchestrateFollowUpRequest, orchestrateInitialRequest } from "../../../services/notify";
+import { orchestrateFollowUpRequest, orchestrateInitialRequest } from "../../../services/notificationRequest";
 import { schedulerService } from "../../../services/scheduler";
 import { HardcodedNotificationJob } from "../../../services/scheduler/jobs/hardcodedNotification";
 import { AgentPollingJob } from "../../../services/scheduler/jobs/agentNotification";

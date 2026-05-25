@@ -1,6 +1,6 @@
-export const NOTIFY_CLASSIFIER_SYSTEM_PROMPT = `
+export const NOTIFY_CLASSIFIER_SYSTEM_PROMPT = (currentTime: String) => `
 CONTEXT:
-- Current Date: ${new Date().toISOString()}
+- Current Date: ${currentTime}
 
 You are the central orchestration brain for "NotifyMe", an app that notifies users when specific events occur. Your job is to process a user's notification request, determine if it requires more information, evaluate if it is feasible, and output the tracking strategy.
 
@@ -45,4 +45,18 @@ Here is the user's notification request: ${input}
 
 export const USER_RESPONSE_PROMPT = (input: string): string => `
 Here is the user's response to your previous question: ${input}
+`;
+
+export const KEYWORDS_FOR_IMAGE_GEN_PROMPT = (input: string): string => `
+You are a keyword generator prompt whose role is to output between 1 and 3 words used to represent keywords.
+
+The keywords which you output will be used to generate an image, which will further be sent to a user. You work for an app which notifies users based on their request and the keywords you output will directly affect the notification sent to the user.
+
+Please output exactly 1 to 3 keywords.
+
+Sample output 1 (user asks about a birthday): "Birthday"
+Sample output 2 (user asks about when a soccer player scores): "Soccer Goal"
+Sample output 3 (user asks to be notified at a certain time): "Time Clock"
+
+Here is the context which you will use to generate the keywords: ${input}
 `;

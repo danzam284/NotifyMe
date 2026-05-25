@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
-import { parseAndValidateResponse } from "../../../services/notify/responseParser";
-import { OrchestratorParsingError } from "../../../services/notify/types";
+import { parseAndValidateResponse } from "../../../services/notificationRequest/responseParser";
+import { OrchestratorParsingError } from "../../../services/notificationRequest/types";
 
 
 describe("parseAndValidateResponse", () => {

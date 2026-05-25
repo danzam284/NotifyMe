@@ -1,3 +1,4 @@
+import type { NotifyService } from "../../notify";
 import type { ScheduledJob } from "../types";
 
 export class HardcodedNotificationJob implements ScheduledJob {
@@ -9,7 +10,8 @@ export class HardcodedNotificationJob implements ScheduledJob {
   constructor(
     id: string,
     private readonly executeAt: Date,
-    private readonly context: string
+    private readonly context: string,
+    private readonly notifyService: NotifyService
   ) {
     this.id = id;
   }
@@ -28,9 +30,7 @@ export class HardcodedNotificationJob implements ScheduledJob {
     );
 
     this.timeout = setTimeout(() => {
-      console.log(`[Notification] ${this.context}`);
-
-      this.completed = true;
+      void this.executeNotification();
     }, delay);
   }
 
@@ -44,5 +44,22 @@ export class HardcodedNotificationJob implements ScheduledJob {
 
   public isComplete(): boolean {
     return this.completed;
+  }
+
+  private async executeNotification(): Promise<void> {
+    try {
+        console.log(this.context);
+      await this.notifyService.notify({
+        type: "HARDCODED",
+        context: this.context,
+      });
+    } catch (error) {
+      console.error(
+        `[Notification] Failed job "${this.id}"`,
+        error
+      );
+    } finally {
+      this.cancel();
+    }
   }
 }

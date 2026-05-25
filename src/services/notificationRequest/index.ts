@@ -1,6 +1,7 @@
 import type { ChatSession } from "../chatSession/chatSession";
 import { chatSessionService } from "../chatSession/chatSessionService";
 import { NOTIFY_CLASSIFIER_SYSTEM_PROMPT, USER_INITIAL_PROMPT, USER_RESPONSE_PROMPT } from "../llm/prompts";
+import { notifyService } from "../notify";
 import { schedulerService } from "../scheduler";
 import { AgentPollingJob } from "../scheduler/jobs/agentNotification";
 import { HardcodedNotificationJob } from "../scheduler/jobs/hardcodedNotification";
@@ -9,7 +10,7 @@ import type { OrchestratorResponse, PipelineResult } from "./types";
 
 export async function orchestrateInitialRequest(text: string): Promise<PipelineResult> {
   const session: ChatSession = await chatSessionService.createSession({
-    systemPrompt: NOTIFY_CLASSIFIER_SYSTEM_PROMPT
+    systemPrompt: NOTIFY_CLASSIFIER_SYSTEM_PROMPT(new Date().toISOString())
   });
 
   const execution = await session.sendMessage(USER_INITIAL_PROMPT(text));
@@ -53,7 +54,8 @@ async function persistActiveNotificationWorker(
       new HardcodedNotificationJob(
         sessionId,
         new Date(decision.execute_at),
-        decision.context
+        decision.context,
+        notifyService
       )
     );
   }
@@ -63,7 +65,8 @@ async function persistActiveNotificationWorker(
       new AgentPollingJob(
         sessionId,
         decision.interval,
-        decision.agent_prompt
+        decision.agent_prompt,
+        notifyService
       )
     );
   }

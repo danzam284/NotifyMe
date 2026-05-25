@@ -10,13 +10,23 @@ import {
 
 import { HardcodedNotificationJob } from "../../../../services/scheduler/jobs/hardcodedNotification";
 import type { TimerHandler } from "bun";
+import type { NotifyService } from "../../../../services/notify";
 
 describe("HardcodedNotificationJob", () => {
   let setTimeoutSpy: ReturnType<typeof spyOn>;
   let clearTimeoutSpy: ReturnType<typeof spyOn>;
 
+  let notifyMock: ReturnType<typeof mock>;
+  let notifyService: NotifyService;
+
   beforeEach(() => {
     mock.restore();
+
+    notifyMock = mock(async () => {});
+
+    notifyService = {
+        notify: notifyMock,
+    } as unknown as NotifyService;
 
     setTimeoutSpy = spyOn(global, "setTimeout").mockImplementation(
       ((callback: TimerHandler) => {
@@ -41,7 +51,8 @@ describe("HardcodedNotificationJob", () => {
       const job = new HardcodedNotificationJob(
         "job-123",
         new Date(Date.now() + 1000),
-        "Reminder text"
+        "Reminder text",
+        notifyService
       );
 
       expect(job.id).toBe("job-123");
@@ -51,7 +62,8 @@ describe("HardcodedNotificationJob", () => {
       const job = new HardcodedNotificationJob(
         "job-123",
         new Date(Date.now() + 1000),
-        "Reminder text"
+        "Reminder text",
+        notifyService
       );
 
       expect(job.isComplete()).toBe(false);
@@ -65,7 +77,8 @@ describe("HardcodedNotificationJob", () => {
       const job = new HardcodedNotificationJob(
         "job-123",
         futureDate,
-        "Reminder text"
+        "Reminder text",
+        notifyService
       );
 
       job.start();
@@ -91,7 +104,8 @@ describe("HardcodedNotificationJob", () => {
       const job = new HardcodedNotificationJob(
         "job-123",
         pastDate,
-        "Reminder text"
+        "Reminder text",
+        notifyService
       );
 
       job.start();
@@ -103,20 +117,28 @@ describe("HardcodedNotificationJob", () => {
       expect(warnSpy).toHaveBeenCalledTimes(1);
     });
 
-    it("marks complete when timeout callback executes", () => {
+    it("sends notification when timeout callback executes", async () => {
       const futureDate = new Date(Date.now() + 5000);
 
       const job = new HardcodedNotificationJob(
         "job-123",
         futureDate,
-        "Reminder text"
+        "Reminder text",
+        notifyService
       );
 
       job.start();
 
       const callback = setTimeoutSpy.mock.calls[0][0] as Function;
 
-      callback();
+      await callback();
+
+      expect(notifyMock).toHaveBeenCalledTimes(1);
+
+      expect(notifyMock).toHaveBeenCalledWith({
+        type: "HARDCODED",
+        context: "Reminder text",
+      });
 
       expect(job.isComplete()).toBe(true);
     });
@@ -129,7 +151,8 @@ describe("HardcodedNotificationJob", () => {
       const job = new HardcodedNotificationJob(
         "job-123",
         futureDate,
-        "Reminder text"
+        "Reminder text",
+        notifyService
       );
 
       job.start();
@@ -147,7 +170,8 @@ describe("HardcodedNotificationJob", () => {
       const job = new HardcodedNotificationJob(
         "job-123",
         futureDate,
-        "Reminder text"
+        "Reminder text",
+        notifyService
       );
 
       job.cancel();

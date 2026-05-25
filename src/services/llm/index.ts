@@ -1,9 +1,5 @@
 import type { LLMProvider } from "./types";
 import { createLLMProvider } from "./providers/factory";
-import {
-  NOTIFY_CLASSIFIER_SYSTEM_PROMPT,
-} from "./prompts";
-
 
 export class LLMService {
   constructor(private provider: LLMProvider = createLLMProvider("mock")) {}
@@ -12,5 +8,3 @@ export class LLMService {
     return this.provider.sendText(prompt);
   }
 }
-
-export const llmService = new LLMService();
