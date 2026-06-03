@@ -1,6 +1,10 @@
+import { parseAndValidateAgentResponse, parseAndValidateCreateResponse } from "../../../utils/responseParser";
 import { intervalToMs } from "../../../utils/types";
+import { GroqAgent } from "../../llm/providers/groqAgent";
+import { MistralAgent } from "../../llm/providers/mistralAgent";
 import type { AgentInterval } from "../../notificationRequest/types";
 import type { NotifyService } from "../../notify";
+import type { AgentResult } from "../agent/types";
 import type { ScheduledJob } from "../types";
 
 export class AgentPollingJob implements ScheduledJob {
@@ -8,6 +12,7 @@ export class AgentPollingJob implements ScheduledJob {
 
   private interval: Timer | null = null;
   private completed = false;
+  private agent = new GroqAgent();
 
   constructor(
     id: string,
@@ -25,9 +30,10 @@ export class AgentPollingJob implements ScheduledJob {
       `[Agent] Starting polling job "${this.id}"`
     );
 
+    this.checkNotification();
     this.interval = setInterval(async () => {
-      void this.executeNotification();
-    }, intervalMs);
+      this.checkNotification();
+    }, 120000);
   }
 
   public cancel(): void {
@@ -42,27 +48,25 @@ export class AgentPollingJob implements ScheduledJob {
     return this.completed;
   }
 
-  private async executeNotification(): Promise<void> {
+  private async checkNotification(): Promise<void> {
     try {
       console.log(`[Agent] Polling "${this.id}"`);
+      console.log(this.agentPrompt);
+      const result = await this.askAgent();
 
-      // Placeholder until real agent exists
-      const agentResponse = "Criteria matched for notification.";
-
-      const isDone = Math.random() < 0.5;
-
-      if (isDone) {
+      if (result.shouldNotify) {
         console.log(`[Agent] Completed "${this.id}"`);
-        await this.notifyService.notify({
-          type: "AGENT",
-          agentPrompt: this.agentPrompt,
-          agentResponse,
-        });
+        await this.notifyService.notify(result.response!);
+        this.cancel();
       }
     } catch (error) {
       console.error(`[Notification] Failed job "${this.id}"`, error);
-    } finally {
-      this.cancel();
     }
+  }
+
+  private async askAgent(): Promise<AgentResult> {
+    const response = await this.agent.sendText(this.agentPrompt);
+    console.log(response);
+    return parseAndValidateAgentResponse(response)
   }
 }

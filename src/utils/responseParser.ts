@@ -1,6 +1,7 @@
-import { OrchestratorParsingError, VALID_INTERVALS, VALID_STATUSES, type AgentInterval, type OrchestratorResponse, type OrchestratorStatus } from "./types";
+import { OrchestratorParsingError, VALID_INTERVALS, VALID_STATUSES, type AgentInterval, type OrchestratorResponse, type OrchestratorStatus } from "../services/notificationRequest/types";
+import type { AgentResult } from "../services/scheduler/agent/types";
 
-export function parseAndValidateResponse(rawLLMOutput: string): OrchestratorResponse {
+export function parseAndValidateCreateResponse(rawLLMOutput: string): OrchestratorResponse {
   if (!rawLLMOutput || typeof rawLLMOutput !== 'string') {
     throw new OrchestratorParsingError('Received empty or non-string input from the LLM.');
   }
@@ -18,7 +19,37 @@ export function parseAndValidateResponse(rawLLMOutput: string): OrchestratorResp
     throw new OrchestratorParsingError(`Missing or invalid status field. Received: "${parsedResponse.status}"`);
   }
 
-  return categorizeResponse(parsedResponse);
+  return categorizeCreateResponse(parsedResponse);
+}
+
+export function parseAndValidateAgentResponse(rawLLMOutput: string): AgentResult {
+  if (!rawLLMOutput || typeof rawLLMOutput !== 'string') {
+    throw new OrchestratorParsingError('Received empty or non-string input from the LLM.');
+  }
+
+  const cleaned = cleanRawResponse(rawLLMOutput);
+
+  let parsed: any;
+  try {
+    parsed = JSON.parse(cleaned);
+  } catch (e: any) {
+    throw new OrchestratorParsingError(`Invalid JSON payload: ${e.message}`);
+  }
+
+  // Validate structure
+  if (typeof parsed.shouldNotify !== 'boolean') {
+    throw new OrchestratorParsingError('Field "shouldNotify" must be a boolean.');
+  }
+
+  // Logic validation: If shouldNotify is true, response must exist and be non-empty
+  if (parsed.shouldNotify) {
+    validateNotNullOrEmpty(parsed.response, "Response");
+  }
+
+  return {
+    shouldNotify: parsed.shouldNotify,
+    response: parsed.shouldNotify ? parsed.response.trim() : null,
+  };
 }
 
 function cleanRawResponse(text: string): string {
@@ -39,20 +70,16 @@ function cleanRawResponse(text: string): string {
     return cleaned;
 }
 
-function categorizeResponse(parsedResponse: any): OrchestratorResponse {
+function categorizeCreateResponse(parsedResponse: any): OrchestratorResponse {
     const { reason, question, execute_at, interval, agent_prompt, response } = parsedResponse;
 
     switch (parsedResponse.status as OrchestratorStatus) {
         case 'CANNOT_DO':
-            if (!reason || typeof reason !== 'string' || reason.trim() === '') {
-                throw new OrchestratorParsingError('Status is CANNOT_DO but "reason" string is missing or empty.');
-            }
+            validateNotNullOrEmpty(reason, "Reason");
             return { status: 'CANNOT_DO', reason: reason.trim() };
 
         case 'QUESTION':
-            if (!question || typeof question !== 'string' || question.trim() === '') {
-                throw new OrchestratorParsingError('Status is QUESTION but "question" string is missing or empty.');
-            }
+            validateNotNullOrEmpty(question, "Question");
             return { status: 'QUESTION', question: question.trim() };
 
         case 'HARDCODED':
@@ -62,9 +89,7 @@ function categorizeResponse(parsedResponse: any): OrchestratorResponse {
             if (new Date(execute_at).getTime() <= Date.now()) {
                 throw new OrchestratorParsingError(`Status is HARDCODED but "execute_at" must be in the future. Received: ${execute_at}`);
             }
-            if (!response || typeof response !== 'string' || response.trim() === '') {
-                throw new OrchestratorParsingError('Status is HARDCODED but "response" string is missing or empty.');
-            }
+            validateNotNullOrEmpty(response, "Response");
             return { 
                 status: 'HARDCODED', 
                 execute_at: execute_at, 
@@ -75,9 +100,7 @@ function categorizeResponse(parsedResponse: any): OrchestratorResponse {
             if (!interval || !VALID_INTERVALS.includes(interval)) {
                 throw new OrchestratorParsingError(`Status is AGENT but "interval" token is invalid. Got: "${interval}"`);
             }
-            if (!agent_prompt || typeof agent_prompt !== 'string' || agent_prompt.trim() === '') {
-                throw new OrchestratorParsingError('Status is AGENT but "agent_prompt" string is missing or empty.');
-            }
+            validateNotNullOrEmpty(agent_prompt, "Agent_Prompt");
             return { 
                 status: 'AGENT', 
                 interval: interval as AgentInterval, 
@@ -86,5 +109,11 @@ function categorizeResponse(parsedResponse: any): OrchestratorResponse {
 
         default:
             throw new OrchestratorParsingError('Unreachable state hit during execution fallback.');
+    }
+}
+
+function validateNotNullOrEmpty(val: String, name: String) {
+    if (!val || typeof val !== 'string' || val.trim() === '') {
+        throw new OrchestratorParsingError(`\"${name}\" string is missing or empty.`);
     }
 }

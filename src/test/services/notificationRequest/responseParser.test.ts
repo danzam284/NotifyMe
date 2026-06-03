@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { parseAndValidateResponse } from "../../../services/notificationRequest/responseParser";
+import { parseAndValidateResponse } from "../../../utils/responseParser";
 import { OrchestratorParsingError } from "../../../services/notificationRequest/types";
 
 

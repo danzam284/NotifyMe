@@ -48,11 +48,7 @@ export class HardcodedNotificationJob implements ScheduledJob {
 
   private async executeNotification(): Promise<void> {
     try {
-        console.log(this.response);
-      await this.notifyService.notify({
-        type: "HARDCODED",
-        context: this.response,
-      });
+      await this.notifyService.notify(this.response);
     } catch (error) {
       console.error(
         `[Notification] Failed job "${this.id}"`,

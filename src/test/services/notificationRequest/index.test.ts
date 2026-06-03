@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from "bun:test";
-import * as responseParser from "../../../services/notificationRequest/responseParser";
+import * as responseParser from "../../../utils/responseParser";
 import { chatSessionService } from "../../../services/chatSession/chatSessionService";
 import { orchestrateFollowUpRequest, orchestrateInitialRequest } from "../../../services/notificationRequest";
 import { schedulerService } from "../../../services/scheduler";

@@ -40,8 +40,7 @@ export class SchedulerService {
   public cleanupCompletedJobs(): void {
     for (const [id, job] of this.jobs.entries()) {
       if (job.isComplete()) {
-        this.jobs.delete(id);
-
+        this.cancel(id);
         console.log(`[Scheduler] Cleaned up completed job "${id}"`);
       }
     }

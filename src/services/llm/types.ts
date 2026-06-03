@@ -1,4 +1,4 @@
-export type LLMProviderName = "groq" | "mistral" | "mock";
+export type LLMProviderName = "groq" | "mistral" | "mock" | "groq-agent" | "mistral-agent" | "gemini";
 
 export type LLMRole = "system" | "user" | "assistant";
 
@@ -28,3 +28,21 @@ export interface LLMProvider {
     options?: SendTextOptions
   ): Promise<string>;
 }
+
+export type MistralContentChunk =
+  | {
+      type: "text";
+      text: string;
+    }
+  | {
+      type: string;
+    };
+
+export type MistralOutput = {
+  type: string;
+  content?: MistralContentChunk[];
+};
+
+export type MistralResponse = {
+  outputs?: MistralOutput[];
+};

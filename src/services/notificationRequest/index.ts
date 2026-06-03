@@ -5,7 +5,7 @@ import { notifyService } from "../notify";
 import { schedulerService } from "../scheduler";
 import { AgentPollingJob } from "../scheduler/jobs/agentNotification";
 import { HardcodedNotificationJob } from "../scheduler/jobs/hardcodedNotification";
-import { parseAndValidateResponse } from "./responseParser";
+import { parseAndValidateCreateResponse } from "../../utils/responseParser";
 import type { OrchestratorResponse, PipelineResult } from "./types";
 
 export async function orchestrateInitialRequest(text: string): Promise<PipelineResult> {
@@ -28,7 +28,7 @@ export async function orchestrateFollowUpRequest(sessionId: string, replyText: s
 }
 
 async function processExecutionResult(session: ChatSession, rawResponse: string): Promise<PipelineResult> {
-  const validatedDecision = parseAndValidateResponse(rawResponse);
+  const validatedDecision = parseAndValidateCreateResponse(rawResponse);
 
   if (validatedDecision.status === "HARDCODED" || validatedDecision.status === "AGENT") {
     await persistActiveNotificationWorker(session.id, validatedDecision);
